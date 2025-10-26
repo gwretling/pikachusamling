@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pikachu-samling ⚡ – Galleri (minimal)</title>
+<style>
+  :root{
+    --bg:#0c1118; --panel:#0f1622; --card:#121a26; --border:#1b2435;
+    --text:#e6ebf2; --muted:#a8b3c2; --accent:#ffd54f; --accent-2:#ffca28;
+    --ok:#57e389; --thumb:220px; --radius:14px; --shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  h1{margin:0;font-weight:800;letter-spacing:.2px}
+
+  header{
+    position:sticky;top:0;z-index:50;
+    background:linear-gradient(180deg,var(--panel),rgba(15,22,34,.85) 70%,rgba(15,22,34,0));
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border); box-shadow:0 6px 20px rgba(0,0,0,.25);
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:14px 16px}
+  .title{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .bolt{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#111;
+    font-weight:900;box-shadow:var(--shadow)}
+  .hint{color:var(--muted);font-size:12.5px}
+
+  .controls{display:grid;gap:10px;grid-template-columns:1fr 1fr;align-items:center}
+  @media (max-width:900px){.controls{grid-template-columns:1fr}}
+  .group{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);
+    border:1px solid var(--border);padding:10px;border-radius:12px}
+  .btn,label.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;
+    background:#162232;border:1px solid var(--border);color:var(--text);
+    border-radius:10px;cursor:pointer;text-decoration:none;transition:.15s transform,.15s background;
+    user-select:none}
+  .btn:hover{transform:translateY(-1px);background:#18283a}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#111;border:none;font-weight:700}
+  .btn.min{padding:8px 10px}
+  input[type="file"]{display:none}
+  .text{display:flex;align-items:center;gap:8px;flex:1}
+  .text input[type="range"]{
+    width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);
+    background:#0d1521;color:var(--text)
+  }
+  .stats{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;color:var(--muted);font-size:13px}
+  .badge{display:inline-grid;place-items:center;padding:3px 8px;border-radius:100px;border:1px solid var(--border);background:#0e1622;color:var(--text)}
+  .badge.ok{border-color:#244d35;background:#0f1b14;color:var(--ok)}
+
+  main{max-width:1200px;margin:10px auto 36px;padding:0 16px}
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(var(--thumb),1fr))}
+  .card{position:relative;background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#0a0f16}
+  .cap{padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+  .cap .meta{font-size:12.5px;color:var(--muted)}
+  .new{position:absolute;top:8px;right:8px;background:#0f1b14;border:1px solid #244d35;color:var(--ok);padding:3px 8px;border-radius:10px;font-size:12px}
+
+  /* Lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;z-index:60;align-items:center;justify-content:center;padding:24px}
+  .lightbox.open{display:flex}
+  .viewer{position:relative;max-width:min(92vw,1400px);max-height:90vh;background:#0b1118;
+    border-radius:16px;border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
+  .viewer img{max-width:100%;max-height:70vh;object-fit:contain;background:#000}
+  .vhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);background:#0f1622}
+  .vfoot{padding:10px 12px;border-top:1px solid var(--border);color:#a8b3c2;font-size:13px;background:#0f1622}
+  .navbtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:900;cursor:pointer}
+  .navbtn:hover{background:rgba(0,0,0,.65)} .prev{left:10px} .next{right:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <!-- Titel + hint -->
+    <div class="title">
+      <div class="bolt">⚡</div>
+      <div>
+        <h1>Pikachu-samling – Galleri</h1>
+        <div class="hint">Lägg till PNG/JPG/JPEG/WebP/GIF via knapparna. Justera miniatyrstorlek med reglaget.</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <!-- Vänsterpanel: lägg till/välj mapp + rensa + stats -->
+      <div class="group">
+        <label class="btn primary" for="fileInput">➕ Lägg till bilder</label>
+        <input id="fileInput" type="file" accept="image/*" multiple />
+        <label class="btn" for="dirInput">📁 Välj mapp</label>
+        <input id="dirInput" type="file" webkitdirectory directory multiple />
+        <button class="btn min" id="clearBtn" title="Rensa galleri">🗑️ Rensa</button>
+        <div class="stats">
+          <span class="badge" id="countBadge">0 bilder</span>
+          <span class="badge" id="sizeBadge">0 B</span>
+          <span class="badge" id="dimBadge">Upplösning: –</span>
+        </div>
+      </div>
+
+      <!-- Endast storleksreglaget -->
+      <div class="group">
+        <div class="text" title="Miniatyrstorlek">
+          <span>🖼️</span>
+          <input id="size" type="range" min="140" max="360" step="10" value="220"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main><div id="grid" class="grid"></div></main>
+
+<!-- Ljuslåda (förhandsvisning) -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
+  <div class="viewer">
+    <div class="vhead">
+      <div id="lbName" style="font-family:ui-monospace,Menlo,Consolas,monospace"></div>
+      <button class="btn min" id="closeBtn" title="Stäng (Esc)">✕ Stäng</button>
+    </div>
+    <img id="lbImg" alt="">
+    <div class="vfoot">
+      <span id="lbMeta"></span>
+      <div class="right"></div>
+      <a id="downloadLink" class="btn min" download>⬇️ Ladda ner</a>
+    </div>
+    <div class="navbtn prev" id="prevBtn" title="Föregående (←)">‹</div>
+    <div class="navbtn next" id="nextBtn" title="Nästa (→)">›</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  let ITEMS = []; // {id,file,name,size,lastModified,w,h,px,url,thumb,isNew}
+  const grid=document.getElementById('grid');
+  const fileInput=document.getElementById('fileInput');
+  const dirInput=document.getElementById('dirInput');
+  const clearBtn=document.getElementById('clearBtn');
+  const sizeEl=document.getElementById('size');
+
+  const countBadge=document.getElementById('countBadge');
+  const sizeBadge=document.getElementById('sizeBadge');
+  const dimBadge=document.getElementById('dimBadge');
+
+  const lb=document.getElementById('lightbox');
+  const lbImg=document.getElementById('lbImg');
+  const lbName=document.getElementById('lbName');
+  const lbMeta=document.getElementById('lbMeta');
+  const prevBtn=document.getElementById('prevBtn');
+  const nextBtn=document.getElementById('nextBtn');
+  const closeBtn=document.getElementById('closeBtn');
+  const downloadLink=document.getElementById('downloadLink');
+  let CURRENT=-1;
+
+  const fmtBytes=n=>{if(!n)return'0 B';const u=['B','KB','MB','GB','TB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return(Math.round(n*10)/10)+' '+u[i];};
+  const sum=(arr,f)=>arr.reduce((a,b)=>a+(f?f(b):b),0);
+  const escapeHtml=s=>s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const setThumbSize=px=>document.documentElement.style.setProperty('--thumb',px+'px');
+  setThumbSize(sizeEl.value);
+
+  async function makeThumb(file,maxSide=540){
+    const blobUrl=URL.createObjectURL(file);
+    try{
+      let bmp; try{bmp=await createImageBitmap(file);}catch{bmp=await new Promise((res,rej)=>{const img=new Image();img.onload=()=>res(img);img.onerror=rej;img.src=blobUrl;});}
+      const w=bmp.width,h=bmp.height,scale=Math.min(1,maxSide/Math.max(w,h));
+      const tw=Math.max(1,Math.round(w*scale)), th=Math.max(1,Math.round(h*scale));
+      const c=document.createElement('canvas'); c.width=tw; c.height=th;
+      const ctx=c.getContext('2d'); ctx.imageSmoothingQuality='high'; ctx.drawImage(bmp,0,0,tw,th);
+      const dataUrl=c.toDataURL('image/jpeg',0.85);
+      URL.revokeObjectURL(blobUrl);
+      return {w,h,thumb:dataUrl};
+    }catch(e){console.warn('Miniatyr misslyckades',e);URL.revokeObjectURL(blobUrl);return{w:0,h:0,thumb:''};}
+  }
+
+  function updateStats(){
+    countBadge.textContent=`${ITEMS.length} bild${ITEMS.length===1?'':'er'}`;
+    sizeBadge.textContent=fmtBytes(sum(ITEMS,x=>x.size||0));
+    const pxs=ITEMS.map(x=>x.px||0).filter(Boolean);
+    dimBadge.textContent=pxs.length?`Medelupplösning: ${(Math.round(sum(pxs)/pxs.length)).toLocaleString('sv-SE')} px`:'Upplösning: –';
+  }
+
+  function render(){
+    const frag=document.createDocumentFragment();
+    for(const x of ITEMS){
+      const card=document.createElement('figure'); card.className='card'; card.tabIndex=0; card.dataset.id=x.id;
+      const img=document.createElement('img'); img.className='thumb'; img.alt=x.name; img.loading='lazy'; img.src=x.thumb||x.url; card.appendChild(img);
+      if(x.isNew){const n=document.createElement('div'); n.className='new'; n.textContent='Ny'; card.appendChild(n);}
+      const cap=document.createElement('figcaption'); cap.className='cap';
+      const left=document.createElement('div'); left.innerHTML=`<b>${escapeHtml(x.name)}</b><div class="meta">${x.w}×${x.h}px • ${fmtBytes(x.size)}</div>`;
+      const openBtn=document.createElement('button'); openBtn.className='btn min'; openBtn.textContent='Öppna'; openBtn.addEventListener('click',ev=>{ev.stopPropagation(); openById(x.id);});
+      cap.appendChild(left); cap.appendChild(openBtn); card.appendChild(cap);
+      card.addEventListener('click',()=>openById(x.id));
+      card.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();openById(x.id);} });
+      frag.appendChild(card);
+    }
+    grid.replaceChildren(frag);
+  }
+
+  function openById(id){const i=ITEMS.findIndex(x=>x.id===id); if(i<0)return; CURRENT=i; updateLightbox(); lb.classList.add('open');}
+  function updateLightbox(){ if(CURRENT<0||CURRENT>=ITEMS.length)return; const x=ITEMS[CURRENT];
+    lbImg.src=x.url; lbName.textContent=x.name;
+    const date=x.lastModified?new Date(x.lastModified).toLocaleString('sv-SE'):'–';
+    lbMeta.textContent=`${x.w}×${x.h}px • ${fmtBytes(x.size)} • ${date}`;
+    downloadLink.href=x.url; downloadLink.download=x.name;
+    prevBtn.style.visibility=(CURRENT>0)?'visible':'hidden';
+    nextBtn.style.visibility=(CURRENT<ITEMS.length-1)?'visible':'hidden';
+  }
+  function closeLightbox(){ lb.classList.remove('open'); }
+
+  // Inläsning
+  fileInput.addEventListener('change', e=>addFiles(e.target.files));
+  dirInput.addEventListener('change', e=>addFiles(e.target.files));
+  clearBtn.addEventListener('click', ()=>{ITEMS.forEach(x=>URL.revokeObjectURL(x.url)); ITEMS=[]; updateStats(); render();});
+  async function addFiles(list){
+    const files=Array.from(list).filter(f=>f.type.startsWith('image/'));
+    for(const file of files){
+      const id=crypto.randomUUID(); const url=URL.createObjectURL(file);
+      const {w,h,thumb}=await makeThumb(file,540);
+      ITEMS.push({id,file,name:file.name,size:file.size,lastModified:file.lastModified,w,h,px:w*h,url,thumb,isNew:true});
+    }
+    updateStats(); render();
+    setTimeout(()=>{ITEMS.forEach(x=>x.isNew=false); render();}, 900);
+  }
+
+  // UI
+  sizeEl.addEventListener('input', ()=>setThumbSize(sizeEl.value));
+  prevBtn.addEventListener('click', ()=>{CURRENT=Math.max(0,CURRENT-1); updateLightbox();});
+  nextBtn.addEventListener('click', ()=>{CURRENT=Math.min(ITEMS.length-1,CURRENT+1); updateLightbox();});
+  closeBtn.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', e=>{ if(e.target===lb) closeLightbox(); });
+  window.addEventListener('keydown', e=>{ if(!lb.classList.contains('open')) return;
+    if(e.key==='Escape') closeLightbox();
+    else if(e.key==='ArrowLeft'){CURRENT=Math.max(0,CURRENT-1); updateLightbox();}
+    else if(e.key==='ArrowRight'){CURRENT=Math.min(ITEMS.length-1,CURRENT+1); updateLightbox();}
+  });
+
+  // Start
+  updateStats(); render();
+})();
+</script>
+</body>
+</html>
